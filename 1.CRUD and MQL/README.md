@@ -7,7 +7,7 @@
 ### 1.CRUD and MQL with MongoDB Atlas, Lambda, API Gateway
 AWS의 Serverless 환경을 이용하여 사용자 정보를 생성, 수정, 삭제 서비스를 구성합니다.
 
-<img src="/01.CRUD and MQL/images/image00.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image00.png" width="90%" height="90%">     
 
 사용자 정보(ssn 및 이름, 취미 등)를 저장하고 수정 조회 할 수 있는 REST API 서비스를 구성합니다. 
 
@@ -22,16 +22,16 @@ Mongosh로 Atlas 에 접속 하고 MongoDB Query 를 이용하여 데이터를 �
 
 Lambda 와 API Gateway를 생성 하고 User 정보를 입력 받고 수정 하는 API를 생성합니다.
 
-<img src="/01.CRUD and MQL/images/image01.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image01.png" width="90%" height="90%">     
 
 
 접근방법을 선택 하여 주는 단계에서 Shell을 선택 하면 접근 주소를 얻을 수 있습니다.   
 
-<img src="/01.CRUD and MQL/images/image20.png" width="60%" height="60%">   
+<img src="/1.CRUD and MQL/images/image20.png" width="60%" height="60%">   
 
 Mongosh이 설치 되어 있음으로 I have the MongoDB Shell installed를 선택하고 계정 접근은 암호로 접근할 것임으로 Password를 선택하면 접근 할 수 있는 주소를 얻을 수 있습니다.    
 
-<img src="/01.CRUD and MQL/images/image21.png" width="70%" height="70%">     
+<img src="/1.CRUD and MQL/images/image21.png" width="70%" height="70%">     
 
 
 Terminal을 열고 해당 주소를 이용하여 mongosh를 실행 하여 줍니다. (접근하기 위한 Account로 입력 하여 줍니다.)
@@ -360,49 +360,49 @@ null
 ````
 db.movies.find({year:1987})
 ````
-<img src="/01.CRUD and MQL/images/image11.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image11.png" width="90%" height="90%">     
 
 - 장르가 Comedy 에 속하는 영화 검색
 ````
 db.movies.find({genres: "Comedy"})
 
 ````
-<img src="/01.CRUD and MQL/images/image12.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image12.png" width="90%" height="90%">     
 
 - 장르가 Comedy 하나 만 있는 데이터 검색
 ````
 db.movies.find({genres:["Comedy"]})
 
 ````
-<img src="/01.CRUD and MQL/images/image13.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image13.png" width="90%" height="90%">     
 
 - 장르가 Comedy 혹은 Drama 인 데이터 검색
 ````
 db.movies.find({genres:{$in:["Comedy", "Drama"]}})
 
 ````
-<img src="/01.CRUD and MQL/images/image14.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image14.png" width="90%" height="90%">     
 
 - imdb 의 평가 점수가 8.0 이상이고 등급이 PG 인 영화 검색
 ````
 db.movies.find({"imdb.rating" : {$gt: 8.0}, rated:"PG"})
 
 ````
-<img src="/01.CRUD and MQL/images/image15.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image15.png" width="90%" height="90%">     
 
 - metacritic의 평점이 존재 하는 영화 검색
 ````
 db.movies.find({metacritic: {$exists: true}})
 
 ````
-<img src="/01.CRUD and MQL/images/image16.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image16.png" width="90%" height="90%">     
 
 - Dr. Strangelove 로 시작하는 영화 검색
 ````
 db.movies.find({title: {$regex: '^Dr. Strangelove'}})
 
 ````
-<img src="/01.CRUD and MQL/images/image17.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image17.png" width="90%" height="90%">     
 
 ### Aggregation
 
@@ -459,23 +459,23 @@ Compass 의 Aggregation에서 Stage를 생성 하여 줍니다.
 
 match stage 생성 하기   
 
-<img src="/01.CRUD and MQL/images/image25.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image25.png" width="90%" height="90%">     
 
 unwind stage 생성 하기    
 
-<img src="/01.CRUD and MQL/images/image26.png" width="90%" height="90%">    
+<img src="/1.CRUD and MQL/images/image26.png" width="90%" height="90%">    
 
 group stage 생성 하기    
 
-<img src="/01.CRUD and MQL/images/image27.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image27.png" width="90%" height="90%">     
 
 out stage 생성 하기    
 
-<img src="/01.CRUD and MQL/images/image28.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image28.png" width="90%" height="90%">     
 
 생성된 컬렉션을 확인 합니다. out은 컬렉션을 생성하고 데이터를 생성 하여 줌으로 다시 aggregation을 실행 하기 위해서는 생성된 컬렉션을 삭제하고 실행 해줍니다. (실행 후 작성한 aggregation을 저장하여 줍니다.)
 
-<img src="/01.CRUD and MQL/images/image29.png" width="100%" height="100%">     
+<img src="/1.CRUD and MQL/images/image29.png" width="100%" height="100%">     
 
 
 #### Aggregation Node JS 실행 하기
@@ -484,11 +484,11 @@ out stage 생성 하기
 개발용 코드는 자동으로 생성 하여 줌으로 이를 이용 하도록 합니다. Compass에서 개발한 aggregation코드를 오픈하여 줍니다.  
 메뉴중 "EXPORT TO LANGUAGE"를 클릭 합니다.
 
-<img src="/01.CRUD and MQL/images/image30.png" width="90%" height="90%">     
+<img src="/1.CRUD and MQL/images/image30.png" width="90%" height="90%">     
 
 개발 언어를 Node를 선택 하여 주고 코드를 복사하여 줍니다.   
 
-<img src="/01.CRUD and MQL/images/image31.png" width="80%" height="80%">     
+<img src="/1.CRUD and MQL/images/image31.png" width="80%" height="80%">     
 
 application 의 aggregation.js 에 복사한 내용을 붙여 주기 합니다.
 컬렉션을 만들지 않고 화면을 출력 하기 위해 out stage 는 생략 하고 작성 합니다.
@@ -697,7 +697,7 @@ Lookup
 }
 ````
 
-<img src="/01.CRUD and MQL/images/image32.png" width="80%" height="80%">     
+<img src="/1.CRUD and MQL/images/image32.png" width="80%" height="80%">     
 
 결과로 다음과 같이 Comments를 포함한 결과가 보여 집니다.
 

@@ -22,6 +22,6 @@ __Agenda__
 
 [0]: https://github.com/MongoDBAtlas/TechSummit/tree/main/0.Provision
 
-[1]: https://github.com/MongoDBAtlas/TechSummit/tree/main/01.CRUD%20and%20MQL
+[1]: https://github.com/MongoDBAtlas/TechSummit/tree/main/1.CRUD%20and%20MQL
 
-[2]: https://github.com/MongoDBAtlas/TechSummit/tree/main/02.IoT
+[2]: https://github.com/MongoDBAtlas/TechSummit/tree/main/2.IoT/

@@ -17,1115 +17,271 @@ AWS의 Serverless 환경을 이용하여 사용자 정보를 생성, 수정, 삭
 
 Mongosh로 Atlas 에 접속 하고 MongoDB Query 를 이용하여 데이터를 생성, 조회, 삭제를 테스트 합니다.
 
+#### Lambda Setup
 
-#### Lambda Serverless CRUD
+AWS Console에 로그인 후 Lambda function을 생성 하여 줍니다. 
 
-Lambda 와 API Gateway를 생성 하고 User 정보를 입력 받고 수정 하는 API를 생성합니다.
+<img src="/1.CRUD and MQL/images/image51.png" width="90%" height="90%">    
 
-<img src="/1.CRUD and MQL/images/image01.png" width="90%" height="90%">     
+Function의 이름은 atlasFunction으로 하며 Runtime 은 Node.js를 선택 합니다. (Java, .NET 등 다양한 언어 드라이버가 제공 됩니다. 과정에서는 json 문서 관리가 편리한 Node.js를 이용합니다.)    
 
-
-접근방법을 선택 하여 주는 단계에서 Shell을 선택 하면 접근 주소를 얻을 수 있습니다.   
-
-<img src="/1.CRUD and MQL/images/image20.png" width="60%" height="60%">   
-
-Mongosh이 설치 되어 있음으로 I have the MongoDB Shell installed를 선택하고 계정 접근은 암호로 접근할 것임으로 Password를 선택하면 접근 할 수 있는 주소를 얻을 수 있습니다.    
-
-<img src="/1.CRUD and MQL/images/image21.png" width="70%" height="70%">     
+<img src="/1.CRUD and MQL/images/image52.png" width="90%" height="90%">    
 
 
-Terminal을 열고 해당 주소를 이용하여 mongosh를 실행 하여 줍니다. (접근하기 위한 Account로 입력 하여 줍니다.)
 
-````
- % mongosh "mongodb+srv://cluster0.5qjlg.mongodb.net/myFirstDatabase" --apiVersion 1 --username admin    
-Enter password: **********
-Current Mongosh Log ID:	64454459813babb209a83f4c
-Connecting to:		mongodb+srv://cluster0.5qjlg.mongodb.net/myFirstDatabase
-Using MongoDB:		6.0.5 (API Version 1)
-Using Mongosh:		1.0.5
+#### Lambda Setup
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+데이터를 받아 MongoDB에 저장 하기 위한 미들웨어 레이어를 Serverless 형태로 구성합니다. 사용자 정보를 입력 받아 저장하고 수정 할 수 있는 서비스를 제공하도록 구성합니다.  
+VPC를 구성하고 MongoDB와 Private 한 연결 구성을 한 경우 Lambda를 VPC에서 구동하도록 하여 Private 연결을 사용 할 수 있습니다. 이번 구성에서는 Public 환경을 사용 하도록 합니다.  
 
-Atlas atlas-t0pzlo-shard-0 [primary] myFirstDatabase> 
-````
-
-#### Insert Test
-
-Mongosh을 이용하여 Atlas와 연결하여 데이터를 생성 합니다.
-
-먼저 데이터베이스를 선택하여야 합니다.
-````
-Atlas atlas-gamf6g-shard-0 [primary] MMT> use handson
-switched to db handson
-Atlas atlas-gamf6g-shard-0 [primary] handson>
-````
-
-다음 데이터 베이스 명령으로 데이터를 생성 합니다.
+#### MongoDB Module Layer
+MongoDB를 사용하기 위한 Module을 Lambda에 생성 해주어야 합니다.
+Nodejs가 설치된 환경에서 nodejs 폴더를 생성하고 mongodb module을 npm을 이용하여 설치 하여 줍니다.
 
 ````
-db.user.insert(
-  {
-        ssn:"123-456-0001", 
-        email:"user@email.com", 
-        name:"Gildong Hong", 
-        DateOfBirth: "1st Jan.", 
-        Hobbies:["Martial arts"],
-        Addresses:[{"Address Name":"Work","Street":"431, Teheran-ro GangNam-gu ","City":"Seoul", "Zip":"06159"}], 
-        Phones:[{"type":"mobile","number":"010-5555-1234"}]
-  }
-)
+nodejs % npm init           
+This utility will walk you through creating a package.json file.
+It only covers the most common items, and tries to guess sensible defaults.
+
+See `npm help init` for definitive documentation on these fields
+and exactly what they do.
+
+Use `npm install <pkg>` afterwards to install a package and
+save it as a dependency in the package.json file.
+
+Press ^C at any time to quit.
+package name: (nodejs) 
+version: (1.0.0) 
+description: 
+entry point: (index.js) 
+test command: 
+git repository: 
+keywords: 
+author: 
+license: (ISC) 
+About to write to nodejs/package.json:
 
 {
-  acknowledged: true,
-  insertedIds: { '0': ObjectId("653662c14771f95974766b8d") }
-}
-````
-Atlas Console 에서 데이터 생성 여부를 확인 합니다.
-
-
-#### find Test
-
-Mongosh을 이용하여 Atlas와 연결하여 데이터를 조회 합니다.
-
-먼저 데이터베이스를 선택하여야 합니다. (이미 해당 데이터베이스를 사용 하고 있으면 생략 합니다)
-````
-Atlas atlas-gamf6g-shard-0 [primary] MMT> use handson
-switched to db handson
-Atlas atlas-gamf6g-shard-0 [primary] handson>
-````
-
-다음 데이터를 추가 한 후 테스트 진행 합니다.
-
-````
-let users = 
-[
-  {
-    ssn: '123-456-0002',
-    email: 'Sejong@email.com',
-    name: 'Sejong King',
-    DateOfBirth: '31th Jan.',
-    Hobbies: [ 'Reading', 'Invent' ],
-    Addresses: [
-      {
-        'Address Name': 'Work',
-        Street: '431, Kyungbok Palice ',
-        City: 'Seoul'
-      }
-    ]
+  "name": "nodejs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  {
-    ssn: '123-456-0003',
-    email: 'Soonshin@email.com',
-    name: 'Soonshin General',
-    DateOfBirth: '3th Jan.',
-    Hobbies: [ 'Martial arts' ],
-    Addresses: [ { 'Address Name': 'Work', Street: 'Noryang', City: 'ChongMu' } ]
-  },
-  {
-    ssn: '123-456-0004',
-    email: 'Micky@email.com',
-    name: 'Michey',
-    DateOfBirth: '5th Jan.',
-    Hobbies: [ 'Playing' ],
-    Addresses: [
-      {
-        'Address Name': 'Work',
-        Street: 'Disney land',
-        City: 'Anaheim',
-        State: 'CA'
-      }
-    ]
-  }
-]
-
-
-db.user.insertMany(users)
-{
-  acknowledged: true,
-  insertedIds: {
-    '0': ObjectId("65595fa36eedc4aee55bdba9"),
-    '1': ObjectId("65595fa36eedc4aee55bdbaa"),
-    '2': ObjectId("65595fa36eedc4aee55bdbab")
-  }
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
 
-````
 
-SSN을 이용한 기본 검색으로 "123-456-0001" 인 데이터를 조회 합니다
-````
-db.user.find({ssn:"123-456-0001"});
+Is this OK? (yes) 
 
-[
-  {
-    _id: ObjectId("64454591813babb209a83f4d"),
-    ssn: '123-456-0001',
-    email: 'user@email.com',
-    name: 'Gildong Hong',
-    DateOfBirth: '1st Jan.',
-    Hobbies: [ 'Martial arts' ],
-    Addresses: [
-      {
-        'Address Name': 'Work',
-        Street: '431, Teheran-ro GangNam-gu ',
-        City: 'Seoul',
-        Zip: '06159'
-      }
-    ],
-    Phones: [ { type: 'mobile', number: '010-5555-1234' } ]
-  }
-]
-````
+nodejs % npm install mongodb
 
-직장이 서울인 사람 중 취미 정보가 Martial arts 인 사람을 중 email 과 이름, 주소 점보만 출력합니다. (Nested Document에 대한 검색)
-Addresses 하위로 Sub-document 가 있으며 City 항목에 도시 정보를 포함하고 있어 이를 이용하여 검색을 진행 합니다.   
+added 12 packages, and audited 13 packages in 538ms
 
-````
-let query = {$and: [{"Addresses.City":"Seoul"}, {Hobbies:"Martial arts"}]}
-let projection = {email:1, name:1,Addresses:1, _id:0}
+found 0 vulnerabilities
 
-db.user.find(query, projection);
-[
-  {
-    email: 'user@email.com',
-    name: 'Gildong Hong',
-    Addresses: [
-      {
-        'Address Name': 'Work',
-        Street: '431, Teheran-ro GangNam-gu ',
-        City: 'Seoul',
-        Zip: '06159'
-      }
-    ]
-  }
-]
+nodejs % 
 
 ````
 
-
-
-#### Update Test
-
-Mongosh을 이용하여 Atlas와 연결하여 데이터를 업데이트 합니다.
-
-먼저 데이터베이스를 선택하여야 합니다. (이미 해당 데이터베이스를 사용 하고 있으면 생략 합니다)
+해당 폴더를 zip으로 압축 하여 줍니다.
 ````
-Atlas atlas-gamf6g-shard-0 [primary] MMT> use handson
-switched to db handson
-Atlas atlas-gamf6g-shard-0 [primary] handson>
+% zip -r nodejs.zip ./nodejs
 ````
 
-수정할 데이터를 ssn을 입력 하여 줍니다.
-수정 대상 데이터의 ssn 및 수정할 데이터 항목을 확인 수정 하여 줍니다.
-`````
-db.user.updateOne(
-  {"ssn":"123-456-0001"},
-   [
-      { $set: { email: "gildong@email.com" } }
-   ]
-);
+Lambda 서비스에서 layer 리소스를 추가 하여 줍니다.
 
-{
-  acknowledged: true,
-  insertedId: null,
-  matchedCount: 1,
-  modifiedCount: 1,
-  upsertedCount: 0
-}      
-`````
+<img src="/1.CRUD and MQL/images/image100.png" width="90%" height="90%">     
 
-데이터를 수정 결과를 확인 합니다. (이메일 주소가 수정 된 것을 확인 합니다)
+이름은 mongodb로 하고 압축한 nodejs.zip 파일을 업로드 하여 줍니다. 아키텍쳐는 x86_64를 선택 하고 Runtime은 Node.js 20을 선택하여 줍니다. (필요한 경우 다른 버전을 사용하여도 무방합니다.)     
+
+<img src="/1.CRUD and MQL/images/image101.png" width="90%" height="90%">    
+
+레이어를 생성 하여 줍니다.
+
+#### Lambda 생성
+
+서비스를 제공할 Function을 생성하여 줍니다. 이름은 usersCRUD로 하여 생성 하여 주며 runtime은 Node.js 로 선택 하여 줍니다.   
+Architecture는 편의상 x86_64를 선택 하고 VPC 환경에서 서비스를 제공이 필요한 경우 Advanced settings에서 enable VPC를 체크하여 VPC를 선택 하여 줍니다.   
+
+<img src="/1.CRUD and MQL/images/image102.png" width="90%" height="90%">    
+
+Layers를 클릭하여 생성한 mongodb 레이어를 추가 하여 줍니다.
+
+<img src="/1.CRUD and MQL/images/image103.png" width="90%" height="90%">    
+
+Layers 항목에서 Add a layer를 클릭하여 module를 추가 합니다. 별도로 생성하여준 module을 사용하기 때문에 custom을 선택하면 업로드한 module layer를 선택 할 수 있습니다.   
+
+<img src="/1.CRUD and MQL/images/image104.png" width="90%" height="90%">    
+
+환경 변수로 MongoDB 접속을 위한 정보를 추가 하여 줍니다. Configuration의 Environment variables에 MONGO_URL을 추가하여 줍니다. 
+
+<img src="/1.CRUD and MQL/images/image105.png" width="90%" height="90%">    
+
+value 항목은 MongoDB Atlas console에서 데이터베이스 클러스터에 connect를 클릭하면 접속 URL을 볼 수 있습니다.   
+
+<img src="/1.CRUD and MQL/images/image106.png" width="90%" height="90%">  
+
+
+Drivers 항목을 콜릭 하고 Node.js driver를 선택 하고 인증 방법을 Password를 선택하면 MongoDB를 접속하기 위한 URL정보가 보여 집니다. 
+
+<img src="/1.CRUD and MQL/images/image107.png" width="60%" height="60%">   
+
+URL을 복사하고 이를 환경 변수 값에 복사하여 줍니다. 복사후 생성하여준 데이터베이스 Account와 Password로 URL을 수정 하여 줍니다.  
+
+제공되는 URL 정보는 다음과 같으며 URL에 데이터베이스 Account와 Password가 포함됩니다. 이를 생성한 Account와 Password로 수정하여 주어야 합니다.
 ````
-db.user.find({"ssn":"123-456-0001"});
-
-[
-  {
-    _id: ObjectId("64454591813babb209a83f4d"),
-    ssn: '123-456-0001',
-    email: 'gildong@email.com',
-    name: 'Gildong Hong',
-    DateOfBirth: '1st Jan.',
-    Hobbies: [ 'Martial arts' ],
-    Addresses: [
-      {
-        'Address Name': 'Work',
-        Street: '431, Teheran-ro GangNam-gu ',
-        City: 'Seoul',
-        Zip: '06159'
-      }
-    ],
-    Phones: [ { type: 'mobile', number: '010-5555-1234' } ]
-  }
-]
-````
-
-#### Update Hobbies Test
-
-Mongosh을 이용하여 Atlas와 연결하여 데이터를 업데이트 (Hobbies를 추가)합니다.
-
-먼저 데이터베이스를 선택하여야 합니다. (이미 해당 데이터베이스를 사용 하고 있으면 생략 합니다)
-````
-Atlas atlas-gamf6g-shard-0 [primary] MMT> use handson
-switched to db handson
-Atlas atlas-gamf6g-shard-0 [primary] handson>
+mongodb+srv://<username>:<password>@mdbatlas.****.mongodb.net/?retryWrites=true&w=majority&appName=MDBAtlas
 ````
 
-수정할 데이터를 ssn을 입력 하여 줍니다.
-수정 대상 데이터의 ssn 및 Hobby 항목을 추가 하여 줍니다. (취미로 Reading 추가 하기)
-`````
-db.user.updateOne(
-  {"ssn":"123-456-0001"},
-  { $push: { Hobbies:"Reading" } }
-);
+주의 : 비밀번호에 !@#$%&* 같은 특수 문자가 포함된 경우 URIEncoding을 하여야 합니다.  
 
-{
-  acknowledged: true,
-  insertedId: null,
-  matchedCount: 1,
-  modifiedCount: 1,
-  upsertedCount: 0
-}
-`````
+index.js 에 코드를 입력 하고 deploy 하여 줍니다. lambda함수 내에 파일명이 index.mjs로 되어 있는 경우 index.js로 변경하여 줍니다.   
 
-데이터를 수정 결과를 확인 합니다. (Hobby에 Reading이 추가되어 있음)
-````
-db.user.find({"ssn":"123-456-0001"});
+환경변수로 부터 Mongodb 접속 주소를 얻어 온 후 Connection을 만들고 techsummit 데이터베이스에 users 컬렉션에 사용자 정보를 추가 하고 수정하는 서비스를 제공 합니다.   
 
-[
-  {
-    _id: ObjectId("64454591813babb209a83f4d"),
-    ssn: '123-456-0001',
-    email: 'gildong@email.com',
-    name: 'Gildong Hong',
-    DateOfBirth: '1st Jan.',
-    Hobbies: [ 'Martial arts', 'Reading' ],
-    Addresses: [
-      {
-        'Address Name': 'Work',
-        Street: '431, Teheran-ro GangNam-gu ',
-        City: 'Seoul',
-        Zip: '06159'
-      }
-    ],
-    Phones: [ { type: 'mobile', number: '010-5555-1234' } ]
-  }
-]
+event의 routkey를 기준으로 하여 CRUD를 제공 합니다.  (GET, POST, PUT, DELETE)
 
-````
+#### API Gateway 생성
 
-#### Remove Test
+API Gateway를 선택 후 Create API를 클릭 합니다.  
+일반 HTTP API로 빌드 합니다.   
 
-Mongosh을 이용하여 Atlas와 연결하여 데이터를 삭제 합니다.
+<img src="/1.CRUD and MQL/images/image108.png" width="60%" height="60%">   
 
-먼저 데이터베이스를 선택하여야 합니다. (이미 해당 데이터베이스를 사용 하고 있으면 생략 합니다)
-````
-Atlas atlas-gamf6g-shard-0 [primary] MMT> use handson
-switched to db handson
-Atlas atlas-gamf6g-shard-0 [primary] handson>
-````
+Add Integration에서 Lambda를 선택 하고 생성한 Lambda 함수를 선택 하여 줍니다.  API 이름을 입력 하고 다음을 클릭 합니다.   
 
-삭제할 데이터를 수정 하여 줍니다.
-삭제할 데이터의 ssn 및 입력 하여줍니다.
-`````
-db.user.deleteOne({ssn:"123-456-0001"});
+<img src="/1.CRUD and MQL/images/image109.png" width="60%" height="60%"> 
 
-{ acknowledged: true, deletedCount: 1 }
+Route 경로를 다음과 같이 입력 하여 줍니다. Route는 사용자를 관리하는 서비스로 특정 사용자는 ssn으로 접근하도록 구성 합니다. 추가로 개인별 취미와 주소 정보를 추가 할 수 있는 POST 서비스를 제공 합니다.   
 
-`````
+전체 사용자를 리턴하는 GET 서비스 : /users
+특정 사용자를 리턴하는 GET 서비스 : /users/{ssn}
+사용자를 추가하는 POST 서비스 : /users
+특정 사용자를 수정하는 PUT 서비스 : /users/{ssn}
+특정 사용자를 삭제하는 DELETE 서비스 : /users/{ssn}
+특정 사용자의 주소 정보를 추가하는 POST 서비스 : /users/{ssn}/address
+특정 사용자의 취미 정보를 추가하는 POST 서비스 : /users/{ssn}/hobby
 
-데이터를 확인 합니다.
-````
-db.user.findOne({ssn:"123-456-0001"});
-null
-````
+<img src="/1.CRUD and MQL/images/image110.png" width="60%" height="60%"> 
 
-### option
-생성된 데이터 베이스중 Movie 관련 데이터 컬렉션 (sample_mflix.movies)에서 다음 내용을 Query 합니다.
+이후 기본값으로 하여 설정을 완료 하고 생성 합니다.   
 
-- 1987 년에 나온 데이터 조회 (Where year = 1987)
+<img src="/1.CRUD and MQL/images/image111.png" width="60%" height="60%"> 
 
-- 장르가 Comedy 에 속하는 영화 검색
+Lambda 함수에서 Trigger 분에 API Gateway가 생성된 것을 확인 하고 4개의 API 주소가 등록 되어 있는지 확인 합니다.  
 
-- 장르가 Comedy 하나 만 있는 데이터 검색
+<img src="/1.CRUD and MQL/images/image112.png" width="60%" height="60%"> 
 
-- 장르가 Comedy 혹은 Drama 인 데이터 검색
+#### API Gateway을 호출
 
-- imdb 의 평가 점수가 8.0 이상이고 등급이 PG 인 영화 검색
-
-- metacritic의 평점이 존재 하는 영화 검색
-
-- Dr. Strangelove 로 시작하는 영화 검색
-
-해당 쿼리는 다음과 같습니다.
-- 1987 년에 나온 데이터 조회 (Where year = 1987)
-````
-db.movies.find({year:1987})
-````
-<img src="/1.CRUD and MQL/images/image11.png" width="90%" height="90%">     
-
-- 장르가 Comedy 에 속하는 영화 검색
-````
-db.movies.find({genres: "Comedy"})
-
-````
-<img src="/1.CRUD and MQL/images/image12.png" width="90%" height="90%">     
-
-- 장르가 Comedy 하나 만 있는 데이터 검색
-````
-db.movies.find({genres:["Comedy"]})
-
-````
-<img src="/1.CRUD and MQL/images/image13.png" width="90%" height="90%">     
-
-- 장르가 Comedy 혹은 Drama 인 데이터 검색
-````
-db.movies.find({genres:{$in:["Comedy", "Drama"]}})
-
-````
-<img src="/1.CRUD and MQL/images/image14.png" width="90%" height="90%">     
-
-- imdb 의 평가 점수가 8.0 이상이고 등급이 PG 인 영화 검색
-````
-db.movies.find({"imdb.rating" : {$gt: 8.0}, rated:"PG"})
-
-````
-<img src="/1.CRUD and MQL/images/image15.png" width="90%" height="90%">     
-
-- metacritic의 평점이 존재 하는 영화 검색
-````
-db.movies.find({metacritic: {$exists: true}})
-
-````
-<img src="/1.CRUD and MQL/images/image16.png" width="90%" height="90%">     
-
-- Dr. Strangelove 로 시작하는 영화 검색
-````
-db.movies.find({title: {$regex: '^Dr. Strangelove'}})
-
-````
-<img src="/1.CRUD and MQL/images/image17.png" width="90%" height="90%">     
-
-### Aggregation
-
-Movies 컬렉션에서 장르가 "Comedy" 인 영화 중 포함된 모든 국가를 기준으로 그룹하여 국가별 포함 개수를 "CountriesInComedy" 컬렉션에 데이터를 생성하여 줍니다.  
-
-Aggregation 이 제공하는 Stage 중, Match 를 이용하여 장르가 Comedy인 것을 찾을 수 있으며, 배열로 되어 있는 항목을 개별로 전환은 unwind 를 이용합니다. 국가별로 그룹을 만들기 위해서는 group Stage를 활용 하며 결과 데이터를 컬렉션에 넣기 위해서는 out을 이용 합니다.   
-
-matach
-Find와 유사한 형태로 사용 합니다.
-
-````
-{$match: 
-  {
-    genres: 'Comedy',
-  }
-}
-````
-
-unwind
-배열을 항목을 지정하면 이를 개별 문서로 전환 하여 줍니다.  
-
-````
-{$unwind: 
-  {
-    path: '$countries',
-  }
-}
-````
-
-group
-지정된 필드를 기준으로 그룹하여 줍니다. SQL의 Group by 와 유사 합니다. 그룹에 따른 계산은 그룹별 카운트 한 횟수로 합니다. 
-
-````
-{$group: 
-  {
-    _id: '$countries',
-    count: {
-      $sum: 1,
-    }
-  }
-}
-````
-
-out
-입력된 커서를 지정된 컬렉션으로 생성 하여 줍니다.
+##### Insert User
+신규 사용자를 생성하는 API를 호출 합니다. 
+POST로 다음 메시지를 Body로 하여 전달 합니다. 
 
 ````
 {
-    $out: 'countriesByComedy',
+      ssn:"123-456-0001", 
+      email:"user@email.com", 
+      name:"Gildong Hong", 
+      DateOfBirth: "1st Jan.", 
+      Hobbies:["Martial arts"],
+      Addresses:[{"Address Name":"Work","Street":"431, Teheran-ro GangNam-gu ","City":"Seoul", "Zip":"06159"}], 
+      Phones:[{"type":"mobile","number":"010-5555-1234"}]
 }
 ````
 
-Compass 의 Aggregation에서 Stage를 생성 하여 줍니다.   
-
-match stage 생성 하기   
-
-<img src="/1.CRUD and MQL/images/image25.png" width="90%" height="90%">     
-
-unwind stage 생성 하기    
-
-<img src="/1.CRUD and MQL/images/image26.png" width="90%" height="90%">    
-
-group stage 생성 하기    
-
-<img src="/1.CRUD and MQL/images/image27.png" width="90%" height="90%">     
-
-out stage 생성 하기    
-
-<img src="/1.CRUD and MQL/images/image28.png" width="90%" height="90%">     
-
-생성된 컬렉션을 확인 합니다. out은 컬렉션을 생성하고 데이터를 생성 하여 줌으로 다시 aggregation을 실행 하기 위해서는 생성된 컬렉션을 삭제하고 실행 해줍니다. (실행 후 작성한 aggregation을 저장하여 줍니다.)
-
-<img src="/1.CRUD and MQL/images/image29.png" width="100%" height="100%">     
-
-
-#### Aggregation Node JS 실행 하기
-
-작성한 Aggregation 코드를 Nodejs에서 실행 하도록 개발 합니다. 
-개발용 코드는 자동으로 생성 하여 줌으로 이를 이용 하도록 합니다. Compass에서 개발한 aggregation코드를 오픈하여 줍니다.  
-메뉴중 "EXPORT TO LANGUAGE"를 클릭 합니다.
-
-<img src="/1.CRUD and MQL/images/image30.png" width="90%" height="90%">     
-
-개발 언어를 Node를 선택 하여 주고 코드를 복사하여 줍니다.   
-
-<img src="/1.CRUD and MQL/images/image31.png" width="80%" height="80%">     
-
-application 의 aggregation.js 에 복사한 내용을 붙여 주기 합니다.
-컬렉션을 만들지 않고 화면을 출력 하기 위해 out stage 는 생략 하고 작성 합니다.
-
-복사한 내용을 pipeline 으로 작성 합니다.
+CURL을 이용한 호출
 
 ````
-        const pipeline = [
-            {
-              '$match': {
-                'genres': 'Comedy'
-              }
-            }, {
-              '$unwind': {
-                'path': '$countries'
-              }
-            }, {
-              '$group': {
-                '_id': '$countries', 
-                'count': {
-                  '$sum': 1
-                }
-              }
-            }, {
-              '$sort': {
-                'count': -1
-              }
-            }
-          ];
+curl --location 'https://***.execute-api.ap-northeast-2.amazonaws.com/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+        "ssn":"123-456-0001", 
+        "email":"user@email.com", 
+        "name":"Gildong Hong", 
+        "DateOfBirth": "1st Jan.", 
+        "Hobbies":["Martial arts"],
+        "Addresses":[{"Address Name":"Work","Street":"431, Teheran-ro GangNam-gu ","City":"Seoul", "Zip":"06159"}], 
+        "Phones":[{"type":"mobile","number":"010-5555-1234"}]
+  }'
+````
+
+##### Get Users
+전체 사용자를 조회 하여 봅니다.
 
 ````
+curl --location 'https://*****.execute-api.ap-northeast-2.amazonaws.com/users' \
+--header 'Content-Type: application/json'
 ````
-kyle@M-FC637HK1H7 application % node aggregation.js
-{ _id: 'USA', count: 3843 }
-{ _id: 'France', count: 793 }
-{ _id: 'UK', count: 696 }
-{ _id: 'Italy', count: 477 }
-{ _id: 'Germany', count: 442 }
-{ _id: 'Canada', count: 348 }
-{ _id: 'India', count: 199 }
-{ _id: 'Spain', count: 197 }
-{ _id: 'Japan', count: 171 }
-{ _id: 'Australia', count: 148 }
-{ _id: 'Hong Kong', count: 117 }
-{ _id: 'Belgium', count: 112 }
-{ _id: 'Finland', count: 104 }
-{ _id: 'Sweden', count: 94 }
-{ _id: 'Denmark', count: 84 }
-{ _id: 'Netherlands', count: 76 }
-{ _id: 'Ireland', count: 73 }
-{ _id: 'Russia', count: 66 }
-{ _id: 'Mexico', count: 62 }
-{ _id: 'Norway', count: 56 }
-{ _id: 'Argentina', count: 54 }
-{ _id: 'China', count: 50 }
-{ _id: 'Switzerland', count: 49 }
-{ _id: 'South Korea', count: 49 }
-{ _id: 'Brazil', count: 48 }
-{ _id: 'West Germany', count: 47 }
-{ _id: 'Poland', count: 47 }
-{ _id: 'Czech Republic', count: 41 }
-{ _id: 'Soviet Union', count: 39 }
-{ _id: 'Austria', count: 33 }
-{ _id: 'Hungary', count: 31 }
-{ _id: 'New Zealand', count: 29 }
-{ _id: 'Taiwan', count: 28 }
-{ _id: 'Israel', count: 26 }
-{ _id: 'Romania', count: 25 }
-{ _id: 'Greece', count: 24 }
-{ _id: 'Turkey', count: 23 }
-{ _id: 'Czechoslovakia', count: 21 }
-{ _id: 'Luxembourg', count: 20 }
-{ _id: 'Thailand', count: 20 }
-{ _id: 'Iceland', count: 19 }
-{ _id: 'Portugal', count: 14 }
-{ _id: 'Iran', count: 13 }
-{ _id: 'South Africa', count: 12 }
-{ _id: 'Philippines', count: 10 }
-{ _id: 'Croatia', count: 10 }
-{ _id: 'Serbia', count: 10 }
-{ _id: 'Latvia', count: 8 }
-{ _id: 'Estonia', count: 8 }
-{ _id: 'Federal Republic of Yugoslavia', count: 8 }
-{ _id: 'Yugoslavia', count: 8 }
-{ _id: 'Cuba', count: 7 }
-{ _id: 'Chile', count: 7 }
-{ _id: 'Singapore', count: 6 }
-{ _id: 'United Arab Emirates', count: 6 }
-{ _id: 'Slovakia', count: 6 }
-{ _id: 'Ukraine', count: 6 }
-{ _id: 'Uruguay', count: 6 }
-{ _id: 'Slovenia', count: 6 }
-{ _id: 'Lebanon', count: 5 }
-{ _id: 'Serbia and Montenegro', count: 5 }
-{ _id: 'Bulgaria', count: 4 }
-{ _id: 'Jordan', count: 4 }
-{ _id: 'Malaysia', count: 4 }
-{ _id: 'Egypt', count: 4 }
-{ _id: 'Republic of Macedonia', count: 4 }
-{ _id: 'Senegal', count: 3 }
-{ _id: 'Puerto Rico', count: 3 }
-{ _id: 'Tunisia', count: 3 }
-{ _id: 'Georgia', count: 3 }
-{ _id: 'Colombia', count: 2 }
-{ _id: 'Lithuania', count: 2 }
-{ _id: 'Botswana', count: 2 }
-{ _id: 'Uzbekistan', count: 2 }
-{ _id: 'Indonesia', count: 2 }
-{ _id: 'Bosnia and Herzegovina', count: 2 }
-{ _id: 'Armenia', count: 2 }
-{ _id: 'Iraq', count: 1 }
-{ _id: 'Angola', count: 1 }
-{ _id: 'Kyrgyzstan', count: 1 }
-{ _id: 'Saudi Arabia', count: 1 }
-{ _id: 'Nigeria', count: 1 }
-{ _id: 'Panama', count: 1 }
-{ _id: 'Tajikistan', count: 1 }
-{ _id: 'Zaire', count: 1 }
-{ _id: 'Liechtenstein', count: 1 }
-{ _id: 'Bhutan', count: 1 }
-{ _id: 'Papua New Guinea', count: 1 }
-{ _id: 'Qatar', count: 1 }
-{ _id: 'Algeria', count: 1 }
-{ _id: "Cète d'Ivoire", count: 1 }
-{ _id: 'Faroe Islands', count: 1 }
-{ _id: 'Malta', count: 1 }
-{ _id: 'Cameroon', count: 1 }
-{ _id: 'Peru', count: 1 }
-{ _id: 'Kazakhstan', count: 1 }
-{ _id: 'Rwanda', count: 1 }
-{ _id: 'East Germany', count: 1 }
-{ _id: 'Albania', count: 1 }
-{ _id: 'Monaco', count: 1 }
-{ _id: 'Greenland', count: 1 }
-{ _id: 'Montenegro', count: 1 }
-{ _id: 'Bolivia', count: 1 }
-{ _id: 'North Korea', count: 1 }
-{ _id: 'Palestine', count: 1 }
+앞서 생성한 데이터를 그대로 응답하는 것을 볼 수 있습니다. 
+
+````
+{"_id":"66b62767f0c43b60b8ad4acd","ssn":"123-456-0001","email":"user@email.com","name":"Gildong Hong","DateOfBirth":"1st Jan.","Hobbies":["Martial arts"],"Addresses":[{"Address Name":"Work","Street":"431, Teheran-ro GangNam-gu ","City":"Seoul","Zip":"06159"}],"Phones":[{"type":"mobile","number":"010-5555-1234"}]}
 
 ````
 
-### Lookup
-
-sample_mflix.comments 와 sample_mflix.users 를 결합하여 데이터를 조회 합니다.    
-users의 데이터 중 이름이 "Mercedes Tyler"인 사람을 찾아 그가 게시한 Comments 를 찾습니다.   
-
-해당 데이터를 검색 하면 다음과 같습니다.    
-users    
-````
-{
-  "_id": {
-    "$oid": "59b99dedcfa9a34dcd78862d"
-  },
-  "name": "Mercedes Tyler",
-  "email": "mercedes_tyler@fakegmail.com",
-  "password": "$2b$12$ONDwIwR9NKF1Tp5GjGI12e8OFMxPELoFrk4x4Q3riJGWY6jl/UZAa"
-}
-````
-
-comments 의 경우 다음과 같습니다.
-````
-[{
-  "_id": {
-    "$oid": "5a9427648b0beebeb69579e7"
-  },
-  "name": "Mercedes Tyler",
-  "email": "mercedes_tyler@fakegmail.com",
-  "movie_id": {
-    "$oid": "573a1390f29313caabcd4323"
-  },
-  "text": "Eius veritatis vero facilis quaerat fuga temporibus. Praesentium expedita sequi repellat id. Corporis minima enim ex. Provident fugit nisi dignissimos nulla nam ipsum aliquam.",
-  "date": {
-    "$date": {
-      "$numberLong": "1029646567000"
-    }
-  }
-},
-...
-]
-````
-
-Lookup으로 조인을 하여 데이터를 볼 때는 전체 데이터를 조인 하는 것 보다 Match를 이용하여 Join 할 범위를 좁힌 후에 하는 것이 필요 합니다.   
-
-Aggregation을 작성하기 위해 Compass에서 sample_mflix.users를 선택 합니다.  
-Aggregation 탭에서 먼저 match 스테이지를 작성 합니다.
-
-Match
-````
-{$match:
-  {
-    name:"Mercedes Tyler"
-  }
-}
-````
-
-Lookup 스테이지를 추가하여 줍니다.    
-Lookup
-````
-{$lookup:
-  {
-    from: "comments",
-    localField: "name",
-    foreignField: "name",
-    as: "Comments"
-  }
-}
-````
-
-<img src="/1.CRUD and MQL/images/image32.png" width="80%" height="80%">     
-
-결과로 다음과 같이 Comments를 포함한 결과가 보여 집니다.
-
+##### Get User
+특정 사용자를 조회 하여 봅니다. 기존 생성한 사용자의 ssn을 이용합니다. 
 
 ````
-db.users.aggregate(
-[
-  {
-    $match: {
-      name: "Mercedes Tyler",
-    },
-  },
-  {
-    $lookup: {
-      from: "comments",
-      localField: "name",
-      foreignField: "name",
-      as: "Comments",
-    },
-  },
-]);
-
-
-{
-  _id: ObjectId("59b99dedcfa9a34dcd78862d"),
-  name: 'Mercedes Tyler',
-  email: 'mercedes_tyler@fakegmail.com',
-  password: '$2b$12$ONDwIwR9NKF1Tp5GjGI12e8OFMxPELoFrk4x4Q3riJGWY6jl/UZAa',
-  Comments: [
-    {
-      _id: ObjectId("5a9427648b0beebeb69579e7"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1390f29313caabcd4323"),
-      text: 'Eius veritatis vero facilis quaerat fuga temporibus. Praesentium expedita sequi repellat id. Corporis minima enim ex. Provident fugit nisi dignissimos nulla nam ipsum aliquam.',
-      date: 2002-08-18T04:56:07.000Z
-    },
-    {
-      _id: ObjectId("5a9427648b0beebeb6958131"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1392f29313caabcdb8ac"),
-      text: 'Dolores nulla laborum doloribus tempore harum officiis. Rerum blanditiis aperiam nemo dignissimos a magni natus. Tenetur suscipit cumque sint dignissimos. Accusantium eveniet consequuntur officia ea.',
-      date: 2007-09-21T08:52:00.000Z
-    },
-    {
-      _id: ObjectId("5a9427648b0beebeb69582cb"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1393f29313caabcdbe7c"),
-      text: 'Voluptatem ad enim corrupti esse consectetur. Explicabo voluptates quo aperiam deleniti reiciendis. Temporibus aliquid delectus recusandae commodi.',
-      date: 2008-05-17T22:55:39.000Z
-    },
-    {
-      _id: ObjectId("5a9427648b0beebeb69582cc"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1393f29313caabcdbe7c"),
-      text: 'Fuga nihil dolor veniam repudiandae. Rem debitis ex porro dolorem maxime laborum. Esse molestias accusamus provident unde. Sint cupiditate cumque corporis nulla explicabo fuga.',
-      date: 2011-03-01T12:06:42.000Z
-    },
-    {
-      _id: ObjectId("5a9427648b0beebeb69588e6"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1393f29313caabcde00c"),
-      text: 'Et quas doloribus ipsum sapiente amet enim optio. Magni odio pariatur quos. Voluptatum error ipsum nemo similique error vel.',
-      date: 1971-05-13T02:38:19.000Z
-    },
-    {
-      _id: ObjectId("5a9427648b0beebeb69589a1"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1393f29313caabcde4a8"),
-      text: 'Ipsam quos magnam ipsum odio aspernatur voluptas nihil nesciunt. Deserunt magni corporis aperiam. Delectus blanditiis eius molestiae modi velit illo veritatis.',
-      date: 2015-12-10T21:26:15.000Z
-    },
-    {
-      _id: ObjectId("5a9427648b0beebeb6958aeb"),
-      name: 'Mercedes Tyler',
-      email: 'mercedes_tyler@fakegmail.com',
-      movie_id: ObjectId("573a1394f29313caabcde63e"),
-      text: 'Magnam repudiandae ipsam perspiciatis. Tenetur commodi tenetur dolorem tempora. Quas a quos laboriosam.',
-      date: 2007-09-19T02:17:40.000Z
-    },
-    ...
-  ]
-}
+curl --location 'https://*****.execute-api.ap-northeast-2.amazonaws.com/users/123-456-0001' \
+--header 'Content-Type: application/json'
 ````
 
-
-
-### option
-#### Aggregation Group 
-다음과 같은 과일 판매 데이터가 있을 때 일자별로 판매된 과일과 총 판매 금액을 계산 합니다.
+ssn으로 검색한 사용자를 조회하여 결과를 반환합니다.
 
 ````
-db.sales.insertMany([
-{ "_id" : 1, "item" : "apple", "price" : 10, "quantity" : 2, "date" : ISODate("2023-01-01T08:00:00Z") },
-{ "_id" : 2, "item" : "grape", "price" : 20, "quantity" : 1, "date" : ISODate("2023-02-03T09:00:00Z") },
-{ "_id" : 3, "item" : "melon", "price" : 5, "quantity" : 5, "date" : ISODate("2023-02-03T09:05:00Z") },
-{ "_id" : 4, "item" : "apple", "price" : 10, "quantity" : 10, "date" : ISODate("2023-02-15T08:00:00Z") },
-{ "_id" : 5, "item" : "melon", "price" : 5, "quantity" : 10, "date" : ISODate("2023-02-15T09:12:00Z") }
-])
+{"_id":"66b62767f0c43b60b8ad4acd","ssn":"123-456-0001","email":"user@email.com","name":"Gildong Hong","DateOfBirth":"1st Jan.","Hobbies":["Martial arts"],"Addresses":[{"Address Name":"Work","Street":"431, Teheran-ro GangNam-gu ","City":"Seoul","Zip":"06159"}],"Phones":[{"type":"mobile","number":"010-5555-1234"}]}
 
 ````
 
-일자 데이터를 기준으로 그룹을 생성하고 accumulation 으로 addToSet, sum 을 이용합니다.
+##### Update Users
+사용자의 이메일을 수정을 해봅니다. 나이를 추가 하여 봅니다.  데이터는 수정할 부분을 Body로 전달 하는 형태로 API를 호출 합니다.
 
 ````
-db.sales.aggregate(
-   [
-     {
-       $group:
-         {
-           _id: { day: { $dayOfYear: "$date"}, year: { $year: "$date" } },
-           itemsSold: { $addToSet: "$item" },
-           total: {$sum: "$quantity"}
-         }
-     }
-   ]
-);
-
-{
-  _id: {
-    day: 34,
-    year: 2023
-  },
-  itemsSold: [
-    'grape',
-    'melon'
-  ],
-  total_price: 25
-}
-{
-  _id: {
-    day: 46,
-    year: 2023
-  },
-  itemsSold: [
-    'melon',
-    'apple'
-  ],
-  total_price: 15
-}
-{
-  _id: {
-    day: 1,
-    year: 2023
-  },
-  itemsSold: [
-    'apple'
-  ],
-  total_price: 10
-}
+curl --location --request PUT 'https://***.execute-api.ap-northeast-2.amazonaws.com/users/123-456-0001' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+        "email":"Gildong@email.com",
+        "age":100
+  }'
 ````
-#### Aggregation Bucket
-화가의 프로파일 정보에서 태어난 년도를 기준으로 하여 그룹을 생성 합니다. 년도는 10년을 기준으로 집계 합니다. 즉 1840 ~1850 년으로 집계 합니다.
+Get User를 다시 호출 하여 보면 email이 변경 되고 age가 추가 된 것을 볼 수 있습니다. Nosql은 schema에 자유롭기 때문에 별도의 작업 없이 schema를 변경 할 수 있습니다.
+
+##### Add Hobby
+기존 사용자 정보의 취미 부분은 "Martial arts"가 있습니다. 취미로 "Reading"을 추가하여 봅니다. 
 
 ````
-db.artists.insertMany([
-  { "_id" : 1, "last_name" : "Bernard", "first_name" : "Emil", "year_born" : 1868, "year_died" : 1941, "nationality" : "France" },
-  { "_id" : 2, "last_name" : "Rippl-Ronai", "first_name" : "Joszef", "year_born" : 1861, "year_died" : 1927, "nationality" : "Hungary" },
-  { "_id" : 3, "last_name" : "Ostroumova", "first_name" : "Anna", "year_born" : 1871, "year_died" : 1955, "nationality" : "Russia" },
-  { "_id" : 4, "last_name" : "Van Gogh", "first_name" : "Vincent", "year_born" : 1853, "year_died" : 1890, "nationality" : "Holland" },
-  { "_id" : 5, "last_name" : "Maurer", "first_name" : "Alfred", "year_born" : 1868, "year_died" : 1932, "nationality" : "USA" },
-  { "_id" : 6, "last_name" : "Munch", "first_name" : "Edvard", "year_born" : 1863, "year_died" : 1944, "nationality" : "Norway" },
-  { "_id" : 7, "last_name" : "Redon", "first_name" : "Odilon", "year_born" : 1840, "year_died" : 1916, "nationality" : "France" },
-  { "_id" : 8, "last_name" : "Diriks", "first_name" : "Edvard", "year_born" : 1855, "year_died" : 1930, "nationality" : "Norway" }
-]);
+curl --location --request POST 'https://***.execute-api.ap-northeast-2.amazonaws.com/users/123-456-0001/hobby' \
+--header 'Content-Type: application/json' \
+--data '{
+        "hobby":"Reading"
+  }'
 ````
 
-태어난 년도를 기준으로 하여 집계를 위해서 bucket을 이용하여 groupBy 항목으로 year_born을 하여 줍니다. 태어난 년도의 집계는 10년을 기준으로 category화는 boundaries레 작성 기준을 작성하여 줍니다. 
+Get User를 호출 하여 보면 Hobby에 "Reading"이 추가 된 것을 볼 수 있습니다.  
+
+##### Add Address
+기존 사용자 정보의 주소를 하나 추가 하여 봅니다. 
 
 ````
-db.artists.aggregate( [
-  {
-    $bucket: {
-      groupBy: "$year_born",                        // Field to group by
-      boundaries: [ 1840, 1850, 1860, 1870, 1880 ], // Boundaries for the buckets
-      default: "Other",                             // Bucket ID for documents which do not fall into a bucket
-      output: {                                     // Output for each bucket
-        "count": { $sum: 1 },
-        "artists" :
-          {
-            $push: {
-              "name": { $concat: [ "$first_name", " ", "$last_name"] },
-              "year_born": "$year_born"
-            }
-          }
-      }
-    }
-  }
-] );
-
-
-{
-  _id: 1840,
-  count: 1,
-  artists: [
-    {
-      name: 'Odilon Redon',
-      year_born: 1840
-    }
-  ]
-}
-{
-  _id: 1850,
-  count: 2,
-  artists: [
-    {
-      name: 'Vincent Van Gogh',
-      year_born: 1853
-    },
-    {
-      name: 'Edvard Diriks',
-      year_born: 1855
-    }
-  ]
-}
-{
-  _id: 1860,
-  count: 4,
-  artists: [
-    {
-      name: 'Emil Bernard',
-      year_born: 1868
-    },
-    {
-      name: 'Joszef Rippl-Ronai',
-      year_born: 1861
-    },
-    {
-      name: 'Alfred Maurer',
-      year_born: 1868
-    },
-    {
-      name: 'Edvard Munch',
-      year_born: 1863
-    }
-  ]
-}
-{
-  _id: 1870,
-  count: 1,
-  artists: [
-    {
-      name: 'Anna Ostroumova',
-      year_born: 1871
-    }
-  ]
-}
-
+curl --location --request POST 'https://****.execute-api.ap-northeast-2.amazonaws.com/users/123-456-0001/address' \
+--header 'Content-Type: application/json' \
+--data '{"Address Name":"Home",
+"Street":"Yuldo Kuk","City":"Jeju","Zip":"99999"}'
 ````
 
-#### Aggregation Unwind
-다음과 같은 의류 정보가 있을 때 의류를 기준으로 가능한 사이즈 정보가 배열화 되어 있습니다. 각 사이즈를 구분하여 문서화를 합니다.    
-사이즈가 없는 의류들은 이를 포함 함니다.
+Get User를 호출 하여 보면 주소 부분에 입력한 주소가 추가된 것을 볼 수 있습니다.
+
+##### Delete User
+생성한 사용자를 삭제 합니다. 
 
 ````
-db.clothing.insertMany([
-  { "_id" : 1, "item" : "Shirt", "sizes": [ "S", "M", "L"] },
-  { "_id" : 2, "item" : "Shorts", "sizes" : [ ] },
-  { "_id" : 3, "item" : "Hat", "sizes": "M" },
-  { "_id" : 4, "item" : "Gloves" },
-  { "_id" : 5, "item" : "Scarf", "sizes" : null }
-]);
-````
-배열로 되어 있는 값을 하나의 문서로 만들어 주기 위해 unwind를 사용합니다. 기본적으로 지정된 array (size)에 값이 없는 경우 연산에서 제외 합니다. 이를 포함하도록 하는 옵션은 preserveAndEmptyArrays입니다.
-
-
+curl --location --request DELETE 'https://*****.execute-api.ap-northeast-2.amazonaws.com/users/123-456-0001' \
+--header 'Content-Type: application/json'
 ````
 
-db.clothing.aggregate( [
-   { $unwind: { path: "$sizes", preserveNullAndEmptyArrays: true } }
-] );
-
-{
-  _id: 1,
-  item: 'Shirt',
-  sizes: 'S'
-}
-{
-  _id: 1,
-  item: 'Shirt',
-  sizes: 'M'
-}
-{
-  _id: 1,
-  item: 'Shirt',
-  sizes: 'L'
-}
-{
-  _id: 2,
-  item: 'Shorts'
-}
-{
-  _id: 3,
-  item: 'Hat',
-  sizes: 'M'
-}
-{
-  _id: 4,
-  item: 'Gloves'
-}
-{
-  _id: 5,
-  item: 'Scarf',
-  sizes: null
-}
-````
-
-
-#### 좌표 정보 검색
-sample_airbnb.listingsAndReviews 컬렉션에는 숙박 시설 정보를 가진 문서이며 해당 숙박시설의 지리 정보가 좌표로 입력 되어 있습니다. (address.location)  마드리드 공항을 기준으로 가장 가까운 숙박 시설을 검색 합니다.  마드리드 공항의 좌표 정보는 -3.56744, 40.49845 이며 검색하려는 숙박 시설을 Hotel 과 Apartments 입니다. 보는 데이터는 숙박 시설의 이름과 주소, 떨어진 거리, 금액으로 합니다. (name, property_type, summary, address, price)
-
-검색은 geoNear 스테이지를 이용하여 검색 하며 전체 데이터중 보고자 하는 필드만을 제한 하기 위해 project 스테이지를 사용 합니다.
-
-
-````
-db.listingsAndReviews.aggregate( [
-   { $geoNear: {
-  near: { type: 'Point', coordinates: [ -3.56744, 40.49845]},
-  distanceField:"distance",
-  key:"address.location",
-  query: {property_type: {$in: ["Hotel","Apartment"]}},
-  spherical: true
-} },
-{ $project: {name:1, property_type:1, 
-summary:1, address:1, 
-price:1, distance:1}
-}
-] );
-
-{
-  _id: '18426634',
-  name: 'Private room',
-  summary: 'Intermarche',
-  property_type: 'Apartment',
-  price: Decimal128("78.00"),
-  address: {
-    street: 'Porto, Porto, Portugal',
-    suburb: '',
-    government_area: 'Canedo, Vale e Vila Maior',
-    market: 'Porto',
-    country: 'Portugal',
-    country_code: 'PT',
-    location: {
-      type: 'Point',
-      coordinates: [
-        -8.4022,
-        41.00962
-      ],
-      is_location_exact: false
-    }
-  },
-  distance: 411593.1181197846
-}
-{
-  _id: '21883829',
-  name: 'Terraço',
-  summary: `La maison dispose de 4 chambres et un canapé-lit, est bon pour le repos et est situé dans un quartier calme et magnifique. Il est proche de la plage d'Espinho et si vous préférez visiter une zone naturelle, nous avons les "Passadiços de Arouca", c'est une zone très belle et relaxante. Ici, dans ce village, nous avons aussi un excellent restaurant qu'ils dépensent des repas économiques et très bons.`,
-  property_type: 'Apartment',
-  price: Decimal128("40.00"),
-  address: {
-    street: 'Aveiro, Aveiro, Portugal',
-    suburb: '',
-    government_area: 'Lobão, Gião, Louredo e Guisande',
-    market: 'Porto',
-    country: 'Portugal',
-    country_code: 'PT',
-    location: {
-      type: 'Point',
-      coordinates: [
-        -8.45777,
-        40.98082
-      ],
-      is_location_exact: true
-    }
-  },
-  distance: 415895.69466630125
-}
-{
-  _id: '23391765',
-  name: 'Cozy Flat, São João da Madeira',
-  summary: 'Um apartamento com quarto de cama de casal, wc’s privativos, sala e cozinha, equipado com tudo que precisa. Uma excelente opção para amantes de caminhadas, cultura e lazer. Se o seu motivo de visita for meramente profissional vai sentir-se em casa. Situa-se junto dos serviços e comércios necessários e a área é servida por transportes públicos.  Para além de São João da Madeira, poderá visitar Santa Maria da Feira e Estarreja em poucos minutos. Localiza-se a cerca de 45 km do Porto e Aveiro.',
-  property_type: 'Apartment',
-  price: Decimal128("45.00"),
-  address: {
-    street: 'São João da Madeira, Aveiro, Portugal',
-    suburb: '',
-    government_area: 'São João da Madeira',
-    market: 'Porto',
-    country: 'Portugal',
-    country_code: 'PT',
-    location: {
-      type: 'Point',
-      coordinates: [
-        -8.48714,
-        40.895
-      ],
-      is_location_exact: true
-    }
-  },
-  distance: 417500.0627241467
-}
-{
-  _id: '30341193',
-  name: 'Recanto agua',
-  summary: 'No meio da cidade, da para andar sempre a pé.',
-  property_type: 'Apartment',
-  price: Decimal128("25.00"),
-  address: {
-    street: 'São João da Madeira, Aveiro, Portugal',
-    suburb: '',
-    government_area: 'São João da Madeira',
-    market: 'Porto',
-    country: 'Portugal',
-    country_code: 'PT',
-    location: {
-      type: 'Point',
-      coordinates: [
-        -8.49682,
-        40.89102
-      ],
-      is_location_exact: true
-    }
-  },
-  distance: 418278.04115931864
-}
-````
+생성했던 사용자를 삭제되어 조회 되지 않는 것을 볼 수 있습니다.

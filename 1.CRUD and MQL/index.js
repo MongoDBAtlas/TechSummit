@@ -15,7 +15,7 @@ async function connectToDatabase() {
   const client = await MongoClient.connect(MONGODB_URI);
 
   // Specify the database we want to use
-  const db = await client.db("techsummit");
+  const db = await client.db("techcamp");
 
   cachedDb = db;
   return db;

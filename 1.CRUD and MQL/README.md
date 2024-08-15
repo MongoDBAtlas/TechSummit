@@ -9,7 +9,7 @@ AWS의 Serverless 환경을 이용하여 사용자 정보를 생성, 수정, 삭
 사용자 정보 관리로 사용자에 대한 기본 정보 및 전화 번호, 주소 정보, 취미를 관리 합니다.  
 정규화된 테이블을 설계 하면 다음과 같은 형태가 됩니다. NoSQL을 이용하여 정규화된 내용을 하나의 Json문서로 관리 할 수 있는 Business Layer를 Serverless 형태로 구성합니다.   
 
-<img src="/1.CRUD and MQL/images/image102.png" width="90%" height="90%">  
+<img src="/1.CRUD and MQL/images/image200.png" width="90%" height="90%">  
 
 전체 시스템 아키텍쳐는 다음과 같습니다. Serverless 형태로 API를 구성하고 API gateway를 통해 외부 서비스에서 사용 할 수 있도록 서비스를 오픈 합니다.   
 

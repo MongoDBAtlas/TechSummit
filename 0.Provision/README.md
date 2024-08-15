@@ -1,7 +1,7 @@
 <img src="https://companieslogo.com/img/orig/MDB_BIG-ad812c6c.png?t=1648915248" width="50%" title="Github_Logo"/> <br>
 
 
-# MongoDB Atlas Tech Summit
+# MongoDB Atlas Tech Camp
 
 ### Provision
 
@@ -51,12 +51,5 @@ MongoDB에 접속하고 데이터를 조회 하는 GUI Tool (Compass)를 다운�
 Nodejs : 
 https://nodejs.org/en/download/
 
-Python :
-https://www.python.org/downloads/
-
 Compass :   
 https://www.mongodb.com/products/compass
-
-Mongosh :
-https://www.mongodb.com/docs/mongodb-shell/install/
-

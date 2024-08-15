@@ -1,13 +1,9 @@
 // Import the MongoDB driver
 const MongoClient = require("mongodb").MongoClient;
 
-// Define the connection string which we can get using the Connect button on the cluster in MongoDB Atlas GUI, In production scenarios we'd want to get this string from a key vault like AWS Key Management, but for this demo, we'll hardcode it in our serverless function here.
-//const MONGODB_URI = "mongodb+srv://<<mapped username>>:<<mapped password>>@<<cluster>>/<<database>>?retryWrites=true&w=majority";
-  
-//Replace the cluster uri and database in the below string
+// Define the connection string which we can get using the Connect button on the cluster in MongoDB Atlas GUI.
 const MONGODB_URI = process.env.MONGO_URL;
 
-// Once we connect to the database, we'll store that connection and reuse it so that we don't have to connect to the database on every request.
 let cachedDb = null;
 
 async function connectToDatabase() {

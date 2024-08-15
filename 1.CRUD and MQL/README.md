@@ -128,7 +128,7 @@ Architecture는 편의상 x86_64를 선택 하고 VPC 환경에서 서비스를 
 
 Layers를 클릭하여 생성한 mongodb 레이어를 추가 하여 줍니다.
 
-<img src="/1.CRUD and MQL/images/image103.png" width="90%" height="90%">    
+<img src="/1.CRUD and MQL/images/image103.png" width="60%" height="60%">    
 
 Layers 항목에서 Add a layer를 클릭하여 module를 추가 합니다. 별도로 생성하여준 module을 사용하기 때문에 custom을 선택하면 업로드한 module layer를 선택 할 수 있습니다.   
 
@@ -265,11 +265,11 @@ https://www.mongodb.com/ko-kr/docs/manual/reference/method/db.collection.deleteO
 API Gateway를 선택 후 Create API를 클릭 합니다.  
 일반 HTTP API로 빌드 합니다.   
 
-<img src="/1.CRUD and MQL/images/image108.png" width="60%" height="60%">   
+<img src="/1.CRUD and MQL/images/image108.png" width="80%" height="80%">   
 
 Add Integration에서 Lambda를 선택 하고 생성한 Lambda 함수를 선택 하여 줍니다.  API 이름을 입력 하고 다음을 클릭 합니다.   
 
-<img src="/1.CRUD and MQL/images/image109.png" width="60%" height="60%"> 
+<img src="/1.CRUD and MQL/images/image109.png" width="80%" height="80%"> 
 
 Route 경로를 다음과 같이 입력 하여 줍니다. Route는 사용자를 관리하는 서비스로 특정 사용자는 ssn으로 접근하도록 구성 합니다. 추가로 개인별 취미와 주소 정보를 추가 할 수 있는 POST 서비스를 제공 합니다.   
 
@@ -281,15 +281,15 @@ Route 경로를 다음과 같이 입력 하여 줍니다. Route는 사용자를 
 특정 사용자의 주소 정보를 추가하는 POST 서비스 : /users/{ssn}/address    
 특정 사용자의 취미 정보를 추가하는 POST 서비스 : /users/{ssn}/hobby    
 
-<img src="/1.CRUD and MQL/images/image110.png" width="60%" height="60%"> 
+<img src="/1.CRUD and MQL/images/image110.png" width="80%" height="80%"> 
 
 이후 기본값으로 하여 설정을 완료 하고 생성 합니다.   
 
-<img src="/1.CRUD and MQL/images/image111.png" width="60%" height="60%"> 
+<img src="/1.CRUD and MQL/images/image111.png" width="80%" height="80%"> 
 
 Lambda 함수에서 Trigger 분에 API Gateway가 생성된 것을 확인 하고 4개의 API 주소가 등록 되어 있는지 확인 합니다.  
 
-<img src="/1.CRUD and MQL/images/image112.png" width="60%" height="60%"> 
+<img src="/1.CRUD and MQL/images/image112.png" width="90%" height="90%"> 
 
 #### API Gateway을 호출
 

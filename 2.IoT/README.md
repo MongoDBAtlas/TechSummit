@@ -147,7 +147,9 @@ techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-ZBQH1 --record
 
 `````
 {
-  "timestamp": new ISODate("2024-08-15T12:00:00.000Z"),
+  "timestamp": {
+    "$date": "2024-09-03T01:30:00.000Z"
+  },
   "owner": "Joey",
   "shop" : "Seoul Shop1",
   "temperature": 40,

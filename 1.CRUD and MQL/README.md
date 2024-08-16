@@ -164,7 +164,7 @@ const MongoClient = require("mongodb").MongoClient;
 const client = await MongoClient.connect(MONGODB_URI);
 
 // Specify the database we want to use
-const db = await client.db("techsummit");
+const db = await client.db("techcamp");
 
 // Open specify collection from database
 const userCollection = db.collection("users");

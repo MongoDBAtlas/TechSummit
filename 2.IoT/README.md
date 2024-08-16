@@ -111,7 +111,7 @@ Settings를 선택 하고 Authentication 을 System 으로 선택 합니다. 저
 
 #### AWS Setting
 AWS 에 로그인 후 Kinesis Data Firehose를 생성 합니다.
-Source 는 Direct PUT 을 선택 하고 Destination 을 MongoDB Cloud 로 선택 합니다.
+Source 는 Direct PUT 을 선택 하고 Destination 을 MongoDB Cloud 로 선택 합니다.    
 <img src="/2.IoT/images/images11.png" width="80%" height="80%">
 
 API Key 는 다음 값을 입력 하여 줍니다.     
@@ -147,40 +147,69 @@ techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-ZBQH1 --record
 
 `````
 {
-  "Timestamp": {
-    "$date": "2024-08-15T12:00:000Z"
-  },
+  "timestamp": new ISODate("2024-08-15T12:00:00.000Z"),
   "owner": "Joey",
   "shop" : "Seoul Shop1",
   "temperature": 40,
   "humidity" : 67,
-  "pressure" : 90,
-  "wind":10,
   "power": 240,
   "efficiency": 80,
+  "square": 200,
+  "floor":3,
   "location" : { "type":"Point", "coordinates":[37.5130,127.0598] },
 }
 `````
 
-데이터 생성을 확인 하고 대시보드 작성을 위해 다음 방법으로 데이터를 생성하여 줍니다.    
+데이터 생성을 확인 하고 대시보드 작성을 위해 다음 방법으로 데이터를 생성하여 줍니다.
+Atlas Console에서 techcamp.IoT 컬렉션을 선택 합니다.  
+Insert document를 클릭 합니다.
 
+<img src="/2.IoT/images/images61.png" width="70%" height="70%">   
+Json 내용에 techcamp.IoT.json 파일을 오픈하고 내용을 복사하여 주고 저장 합니다. (Json 파일의 내용이 Collection에 생성 됩니다.)
 
+5개의 매장에 대해 10분에 한번씩 온도, 습도, 전력 사용량, 효율을 수집 한 데이터로 1시간 동안 생성된 데이터 입니다.  
 
 #### Chart 생성하기
-생성된 데이터로 부터 챠트를 생성 합니다. Atlas Console 로그인 후 Charts 를 클릭합니다
-Charts 를 클릭 하고 Data Sources 메뉴를 선택 합니다. Add Data Source 버튼을 클릭 한 후 사용 중인 클러스터와 연결 합니다. Chart와 연결할 데이터 소스로 IoT를 선택 합니다.    
-<img src="/2.IoT/images/images15.png" width="50%" height="50%">    
+생성된 Io데이터를 시각화하여 상태를 상세히 볼 수 있도록 합니다. Atlas Console 로그인 후 Charts 를 클릭합니다.   
+<img src="/2.IoT/images/images51.png" width="90%" height="90%">    
 
-
-이후 Add Dashboard를 합니다.     
+Add Dashboard를 선택 합니다.     
+Dashboard의 이름과 설명을 입력 하여 줍니다.   
 <img src="/2.IoT/images/images14.png" width="40%" height="40%">    
 
-Add Chart 를 클릭 하고 Datasource aws.IoT 를 선택 합니다.     
+Add Chart 를 클릭 하고 Datasource 선택에서 MongoDB Cluster와 컬렉션(tehcamp.IoT)을 선택 합니다.     
 
-<img src="/2.IoT/images/images16.png" width="70%" height="70%">
+<img src="/2.IoT/images/images52.png" width="70%" height="70%">
 
-챠트 종류를 Circular 를 선택 하고 City 를 Label 항목으로 reg_num 을 Arc 항목으로 Drag & Drop 하여 줍니다.
-<img src="/2.IoT/images/images17.png" width="70%" height="70%">
+대시 보드는 전체 매장에서 전력 사용량의 평균과 최대 사용량을 숫자로 보여 주도록 합니다. 해당 Chart를 생성하기 위해 Number 형태 Chart를 선택 하고 보여줄 값으로 Power항목을 Drag & drop으로 입력 하여 주고 평균값을 선택 합니다. Chart의 이름(Average Power Usage)을 입력하고 저장 합니다.   
+<img src="/2.IoT/images/images53.png" width="80%" height="80%">
 
-챠트를 저장 합니다.
-   
+저장 후 Chart를 적절한 크기 및 위치를 지정하여 주고 Chart를 추가 하고 동일한 방법으로 데이터를 입력 후 평균 대신 최대값을 입력 하여 줍니다.    
+<img src="/2.IoT/images/images54.png" width="80%" height="80%">
+
+매장별로 평균 온도값을 Bar chart형태로 추가 합니다.  
+Add Chart를 하고 Chart type을 Grouped Bar를 선택 합니다. 이후 X축은 온도 값을 선택 하고 Y축은 매장을 선택 합니다. 매장별로 생성된 값의 온도 평균을 산출하고 Bar Chart 형태로 표현 합니다.    
+<img src="/2.IoT/images/images55.png" width="80%" height="80%">
+
+매장별로 평균 습도를 Bar chart형태로 추가 하여 X축에 매장을 입력 하고 Y축에 습도를 입력 하고 평균, 최소, 최대을 선택 합니다. (하나의 Chart에 3개 항목을 한번에 보여 줍니다.)    
+<img src="/2.IoT/images/images57.png" width="80%" height="80%">
+
+상세한 전력 사용량과 효율에 대한 시간 기준 그래프를 추가 합니다. Chart를 추가 하고 시간 기준의 Chart Type인 Continuos Line을 선택 합니다. 시간항목 (timestamp)를 X축에 입력 하여 주고 Y축 항목으로 Power를 선택 합니다. Series에 Shop을 입력 하여 매장별로 그래프를 그리도록 합니다. 챠트에 대한 이름을 입력 하고 저장 합니다.      
+<img src="/2.IoT/images/images56.png" width="90%" height="90%">
+
+동일한 방법으로 Chart를 추가 하고 X축 항목에 효율을 선택하고 챠트이름을 입력 저장 합니다.   
+
+생성한 Chart는 Dashboard에 적당한 위치에 배열 합니다.   
+
+완성된 대시보드를 조회 합니다.   
+<img src="/2.IoT/images/images58.png" width="90%" height="90%">  
+
+대시보드는 share를 클릭 하여 다른 사용자와 공유 할 수 있고 권한을 통해 대시보드를 수정, 조회 할 수 있는 권한을 제한할 수 있습니다. 
+외부에서 조회를 위한 링크 생성을 위해 Share를 클릭 합니다. 
+
+<img src="/2.IoT/images/images59.png" width="60%" height="60%">
+
+Dashboard링크를 복사하고 다른 웹브라우저에서 대시보드를 조회 합니다.
+<img src="/2.IoT/images/images60.png" width="90%" height="90%">  
+
+

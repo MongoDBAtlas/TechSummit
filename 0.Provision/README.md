@@ -65,7 +65,7 @@ Account ID는 AWS console로그인 후 Account정보에서 얻을 수 있습니�
 주의할 점은 Peering은 VPC간의 양방향 통신이기 때문에 CIDR주소가 중복이 않되어야 합니다. 서울 리전의 경우 MongoDB의 CIDR주소는 192.168.232.0/21로 생성됩니다. 만약 주소가 중복된다면 Private Link를 사용을 권고 합니다. Private Link는 MongoDB의 VPC내에 Load Balancer가 생성되어 접속되어 단방향 통신이 되어 중복에 무관 합니다.    
 Intiate Peering을 클릭 합니다.  
 
-<img src="/0.Provision/images/images15.png" width="60%" height="60%">  
+<img src="/0.Provision/images/images15.png" width="90%" height="90%">  
 
 AWS console내에 VPC에서 Peering Connection을 선택 하면 승인 대기 중인 Peering Connection 정보를 볼 수 있습니다. 이를 선택 후 Accept를 선택 합니다.  
 
@@ -75,7 +75,7 @@ AWS console내에 VPC에서 Peering Connection을 선택 하면 승인 대기 �
 (Accept 처리는 수분 소요 됩니다)
 
 VPC내에 애플리케이션이 실행될 Subnet의 Routing Table을 선택 후 Route를 추가 하여 줍니다.  
-<img src="/0.Provision/images/images17.png" width="80%" height="80%">  
+<img src="/0.Provision/images/images17.png" width="70%" height="70%">  
 
 Destination은 MongoDB의 CIDR주소(192.168.232.0/21)를 입력 하고 Target을 Peering으로 선택 하고 생성한 Peering을 선택 하고 저장 합니다.
 
@@ -153,7 +153,7 @@ VPC의 라우팅 테이블에 MongoDB의 CIDR 주소로 라우팅이 되도록 �
 
 Peering 연결은 비용이 발생 하기 때문에 반드시 실습 완료 이후 삭제 하여 줍니다.  
 (Atlas Console에서 Security > Network Access > Peering에서 Peering 항목을 선택 하고 Terminate를 클릭 합니다.)
-<img src="/0.Provision/images/images18.png" width="70%" height="70%">  
+<img src="/0.Provision/images/images18.png" width="80%" height="80%">  
 
 (삭제에 수분이 소요 됩니다.)    
 

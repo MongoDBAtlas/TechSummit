@@ -133,8 +133,11 @@ Data 는 다음 Json 메시지를 Base64로 encoding 하여 줍니다.
 {"owner": "atlas-iot"}
 `````
 
+생성한 Firehose에 메시지를 생성 합니다. Base64로 encoding한 메시지를 Data에 추가 하여 실행 하여 줍니다.   
+해당 커맨드를 실행 하기 위해 aws cli 설치가 필요하며 실행을 위한 인증이 되어야 합니다.   
+
 `````
-techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-ZBQH1 --record '{ "Data":"eyJvd25lciI6ICJhd3MtaW90In0="}'
+techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-*** --record '{ "Data":"<<Base64 Encoding Message>>"}'
 {
     "RecordId": "4UhgZcPAvkZjBBOjAp+l3s8XCArwpNIBIyXmGzf5RwTPKVcC5JNThmGPq+AGHU9SiA63pEV8GJPBrXPZ1v1IhlWLhDvWW8w0KfofnIMY6QP/0z8/jsWjfGKKTRsSEnumTeCNeCv9J1X+Dg6WmXhZ0LHvS0bI+WNVlPalOGM1KLfmKhGdceuxMICU/JsG+j98LzM85Hd1hbK1pQN9xm6DtRyOy0hxk3TG",
     "Encrypted": false
@@ -161,6 +164,17 @@ techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-ZBQH1 --record
   "location" : { "type":"Point", "coordinates":[37.5130,127.0598] },
 }
 `````
+`````
+techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-*** --record '{ "Data":"<<Base64 Encoding Message>>"}'
+{
+    "RecordId": "4UhgZcPAvkZjBBOjAp+l3s8XCArwpNIBIyXmGzf5RwTPKVcC5JNThmGPq+AGHU9SiA63pEV8GJPBrXPZ1v1IhlWLhDvWW8w0KfofnIMY6QP/0z8/jsWjfGKKTRsSEnumTeCNeCv9J1X+Dg6WmXhZ0LHvS0bI+WNVlPalOGM1KLfmKhGdceuxMICU/JsG+j98LzM85Hd1hbK1pQN9xm6DtRyOy0hxk3TG",
+    "Encrypted": false
+}
+`````
+
+IoT 컬렉션에 메시지가 전달 되어 생성 되어 있는지 확인 합니다.   
+
+#### Dashboard 작성
 
 데이터 생성을 확인 하고 대시보드 작성을 위해 다음 방법으로 데이터를 생성하여 줍니다.
 Atlas Console에서 techcamp.IoT 컬렉션을 선택 합니다.  
@@ -213,5 +227,4 @@ Add Chart를 하고 Chart type을 Grouped Bar를 선택 합니다. 이후 X축�
 
 Dashboard링크를 복사하고 다른 웹브라우저에서 대시보드를 조회 합니다.
 <img src="/2.IoT/images/images60.png" width="90%" height="90%">  
-
 

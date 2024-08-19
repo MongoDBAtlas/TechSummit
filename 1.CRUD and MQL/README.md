@@ -158,6 +158,7 @@ mongodb+srv://<username>:<password>@mdbatlas.****.mongodb.net/?retryWrites=true&
 index.js에 대한 코드를 생성 하여 줍니다.   
 
 다음 코드는 nodejs에서 MongoDB와 연결을 생성하는 코드 입니다.
+MongoClient.connection으로 conection 오브젝트를 생성하고 작업 대상 데이터 베이스, 컬렉션에 대한 커넥션을 생성하여 사용 합니다.   
 
 ````
 const MongoClient = require("mongodb").MongoClient;
@@ -170,7 +171,7 @@ const db = await client.db("techcamp");
 const userCollection = db.collection("users");
 ````
 
-환경변수로 부터 Mongodb 접속 주소를 얻어 온 후 Connection을 만들고 techsummit 데이터베이스에 users 컬렉션에 사용자 정보를 추가 하고 수정하는 서비스를 제공 합니다.   
+환경변수로 부터 Mongodb 접속 주소를 얻어 온 후 Connection을 만들고 techcamp 데이터베이스에 users 컬렉션에 사용자 정보를 추가 하고 수정하는 서비스를 제공 합니다.   
 
 event의 routkey를 기준으로 하여 CRUD를 제공 합니다.  (GET, POST, PUT, DELETE)
 
@@ -195,56 +196,25 @@ https://www.mongodb.com/ko-kr/docs/manual/reference/method/db.collection.deleteO
   try{
     switch (event.routeKey) {
       case 'GET /users':
-        query = {};
-        
         <<Find users Query>>
-
         break;
       case 'GET /users/{ssn}':
-        params = event.pathParameters;
-        query = {ssn: params.ssn};
-        
-        <<Find user Query with ssn>>
-        
+        <<Find user Query with ssn>>        
         break;
       case 'POST /users':
-        reqBody = JSON.parse(event.body);
-        
-        <<Insert user>>
-        
+        <<Insert user>>        
         break;
       case 'PUT /users/{ssn}':
-        params = event.pathParameters;
-        reqBody = JSON.parse(event.body);
-        
-        query = {ssn: params.ssn};
-        
-        <<Update user Query with ssn>>
-        
+        <<Update user Query with ssn>>        
         break;
       case 'DELETE /users/{ssn}':
-        params = event.pathParameters;
-        query = {ssn: params.ssn};
-        
         <<Delete user Query with ssn>>
-        
-        statusCode=201;
         break;
       case 'POST /users/{ssn}/hobby':
-        params = event.pathParameters;
-        query = {ssn: params.ssn};
-        reqBody = JSON.parse(event.body);
-        
         <<Insert hobby Query with ssn>>
-
         break;
       case 'POST /users/{ssn}/address':
-        params = event.pathParameters;
-        query = {ssn: params.ssn};
-        reqBody = JSON.parse(event.body);
-        
         <<Insert Address Query with ssn>>
-        
         break;
       default:
         throw new Error ('Unsupported route: ${event.routeKey}')
@@ -256,9 +226,30 @@ https://www.mongodb.com/ko-kr/docs/manual/reference/method/db.collection.deleteO
   } finally {
     
   }
+
+  return { statusCode: statusCode, body: body, headers: headers};
+````  
+예로 GET /users 는 전체 사용자 정보를 찾아 Body로 반환하여 다음과 같이 작성 할 수 있습니다.
+
+````
+case 'GET /users':
+  const usersQuery = {};
+  results = userCollection.find();
+
+  if (results.length > 0) {
+      results.forEach((result, i) => {
+          body += JSON.stringify(result);
+      });
+  } else {
+      body = JSON.stringify({});
+  }
+  statusCode=200;
+
+  break;
 ````  
 
-전체 코드는 index.js에 있습니다. 해당 코드를 복사 하여 주고 deploy 하여 줍니다. lambda함수 내에 파일명이 index.mjs로 되어 있는 경우 index.js로 변경하여 줍니다.   
+전체 코드는 index.js에 있습니다. 참고 하여 코드 블럭을 완성하여 배포 합니다.    
+(lambda함수 내에 파일명이 index.mjs로 되어 있는 경우 index.js로 변경하여 줍니다.)   
 
 #### API Gateway 생성
 

@@ -12,26 +12,25 @@ exports = function(payload, response) {
     }
     const collection = context.services
     .get("mongodb-atlas")
-    .db("aws")
+    .db("techcamp")
     .collection("IoT");
- 
-    var fullDocument = JSON.parse(payload.body.text());
+    console.log("App Service Function is running with body ["+payload.body.text()+"]");
     
+    var fullDocument = JSON.parse(payload.body.text());
+
     const firehoseAccessKey = payload.headers["X-Amz-Firehose-Access-Key"];
     const KDFH_SECRET_KEY = "Aol7jmcDjYxLoruWMZprJHQPxHdCx7kvxLn5yvtOR3gdErza0fevfZWwLJygpu3H";
-    console.log('should be: ' + context.values.get("KDFH_SECRET_KEY"));
- 
+    //console.log('should be: ' + context.values.get("KDFH_SECRET_KEY"));
    // Check shared secret is the same to validate Request source
    if (firehoseAccessKey == KDFH_SECRET_KEY) {
       
       fullDocument.records.forEach((record) => {
-        
-            const document = JSON.parse(decodeBase64(record.data))
-            
- //console.log('Step2'+Buffer.from(record.data, "base64").toString('utf8'));
+            const document = JSON.parse(decodeBase64(record.data));
+
+            //console.log('Step2'+JSON.parse(Buffer.from(record.data, "base64").toString('utf8')));
             //const document = JSON.parse(Buffer.from(record.data, "base64").toString('utf8'));
+            console.log("Insert Event ["+JSON.stringify(document)+"]");
             const status = collection.insertOne(document);
-            console.log("got status: "+ status)
       })
       
 

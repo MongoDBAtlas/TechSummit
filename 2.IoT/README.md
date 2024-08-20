@@ -31,7 +31,7 @@ Route 주소를 /myservice 로 입력 하고 Method 를 Post 를 선택 합니�
 Function 항목에서 Select a function 을 클릭 하고 New Function 을 선택 한 후 작성된 Script 를 입력 하여 줍니다.
 Function name 은 IoTFunc 하고 IoTfunc.js 의 내용을 복사하여 주고 저장 합니다.   
 
-Function은 Lambda와 유사한 서비스로 Jaavascript형태로 실행 코드를 작성 합니다. IoTfunc은 다음과 같은 구성으로 메시지를 수신 받아 Base64 decode 후에 데이터를 IoT 컬렉션에 저장 합니다.   
+Function은 Lambda와 유사한 서비스로 Javascript형태로 실행 코드를 작성 합니다. IoTfunc은 다음과 같은 구성으로 메시지를 수신 받아 Base64 decode 후에 데이터를 IoT 컬렉션에 저장 합니다.   
 
 `````
 exports = function(payload, response) {
@@ -161,24 +161,33 @@ techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-*** --record '
   "efficiency": 80,
   "square": 200,
   "floor":3,
-  "location" : { "type":"Point", "coordinates":[37.5130,127.0598] },
+  "location" : { "type":"Point", "coordinates":[37.5130,127.0598] }
 }
+
 `````
 `````
-techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-*** --record '{ "Data":"<<Base64 Encoding Message>>"}'
+techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-**** --record '{ "Data":"ewogICJ0aW1lc3RhbXAiOiB7CiAgICAiJGRhdGUiOiAiMjAyNC0wOS0wM1QwMTozMDowMC4wMDBaIgogIH0sCiAgIm93bmVyIjogIkpvZXkiLAogICJzaG9wIiA6ICJTZW91bCBTaG9wMSIsCiAgInRlbXBlcmF0dXJlIjogNDAsCiAgImh1bWlkaXR5IiA6IDY3LAogICJwb3dlciI6IDI0MCwKICAiZWZmaWNpZW5jeSI6IDgwLAogICJzcXVhcmUiOiAyMDAsCiAgImZsb29yIjozLAogICJsb2NhdGlvbiIgOiB7ICJ0eXBlIjoiUG9pbnQiLCAiY29vcmRpbmF0ZXMiOlszNy41MTMwLDEyNy4wNTk4XSB9Cn0="}'
 {
-    "RecordId": "4UhgZcPAvkZjBBOjAp+l3s8XCArwpNIBIyXmGzf5RwTPKVcC5JNThmGPq+AGHU9SiA63pEV8GJPBrXPZ1v1IhlWLhDvWW8w0KfofnIMY6QP/0z8/jsWjfGKKTRsSEnumTeCNeCv9J1X+Dg6WmXhZ0LHvS0bI+WNVlPalOGM1KLfmKhGdceuxMICU/JsG+j98LzM85Hd1hbK1pQN9xm6DtRyOy0hxk3TG",
+    "RecordId": "Mn4MtjMAe+d7R1JLOiYOAlT+zkgNnzDMUN5Aho8xnNfhgBjy1tSB9SSfgjuZ9kh3GLOVFp85gK19o8ZOK8vICziKk9UKjSUJmbiLEVVDdLAgPOwtv5KWCdCXlIV2+cUPV0dt3dMaL8j0se0PjIEwrJiBtY6tEt/brhpH8kw0fQE8ZydSPtT7QCR+PXx5dUOMgUCqKs2x2cp/TOXT6GbxeBUUcvqSeR34",
     "Encrypted": false
 }
+
 `````
 
 IoT 컬렉션에 메시지가 전달 되어 생성 되어 있는지 확인 합니다.   
 
+<img src="/2.IoT/images/images62.png" width="80%" height="80%">    
+
+이벤트 기반 비동기 작동으로 시간이 다소 소요 됩니다. 이벤트 처리에 대한 로그는 App service 의 Logs에서 확인 할 수 있습니다.   
+
+<img src="/2.IoT/images/images63.png" width="80%" height="80%">   
+
 #### Dashboard 작성
 
-데이터 생성을 확인 하고 대시보드 작성을 위해 다음 방법으로 데이터를 생성하여 줍니다.
+IoT 데이터를 수신 하고 저장이 구성되어 있으며 수집된 데이터를 이용하여 대시보드를 구성합니다. 이를 위해 일부 데이터를 직접 생성한 후 진행 합니다.  
 Atlas Console에서 techcamp.IoT 컬렉션을 선택 합니다.  
-Insert document를 클릭 합니다.
+Insert document를 클릭 합니다.   
+5개의 매장에 대해 10분에 한번씩 온도, 습도, 전력 사용량, 효율을 수집 한 데이터로 1시간 동안 생성된 데이터 입니다.   
 
 <img src="/2.IoT/images/images61.png" width="70%" height="70%">   
 Json 내용에 techcamp.IoT.json 파일을 오픈하고 내용을 복사하여 주고 저장 합니다. (Json 파일의 내용이 Collection에 생성 됩니다.)

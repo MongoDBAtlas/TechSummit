@@ -160,11 +160,9 @@ Peering 연결은 비용이 발생 하기 때문에 반드시 실습 완료 이�
 AWS Console의 VPC에서 라우팅 테이블에 Peering으로 추가된 항목을 삭제 합니다.   
 
 #### 기타 필요한 소프트웨어
-클라이언트 애플리케이션 테스트를 위한 Nodejs 필요합니다.
-MongoDB에 접속하고 데이터를 조회 하는 GUI Tool (Compass)를 다운로드 합니다.
+클라이언트 애플리케이션 테스트를 위한 Nodejs 필요합니다.  
 
 Nodejs : 
 https://nodejs.org/en/download/
 
-Compass :   
-https://www.mongodb.com/products/compass
+

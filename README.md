@@ -17,6 +17,9 @@ __Agenda__
 - __Handson__  [GitHub][2]
     - IoT
 
+3. __EventBridge__     
+- __Handson__  [GitHub][3]
+    - EventBridge
 
 
 
@@ -25,3 +28,5 @@ __Agenda__
 [1]: https://github.com/MongoDBAtlas/TechSummit/tree/main/1.CRUD%20and%20MQL
 
 [2]: https://github.com/MongoDBAtlas/TechSummit/tree/main/2.IoT/
+
+[3]: https://github.com/MongoDBAtlas/TechSummit/tree/main/3.EventBridge/

@@ -11,13 +11,13 @@ Kinesis Data firehorse 로 IoT 데이터를 수집하여 Atlas 로 전달 하는
 
 <img src="/2.IoT/images/images00.png" width="90%" height="90%">   
 
-Kinesis 는 IoT 이벤트를 수집하고 그 저장소로 MongoDB Cloud를 지정 합니다. MongoDB Cloud내에 Realm Application은 Https endpoint를 통하여 Hirehose로 부터 이벤트를 수신 합니다. 수신 된 데이터는 Realm Application의 Serverless 함수(Function)를 통해 가공된 후 MongoDB에 저장 됩니다.  
+Kinesis 는 IoT 이벤트를 수집하고 그 저장소로 MongoDB Cloud를 지정 합니다. MongoDB Cloud내에 App Services Application은 Https endpoint를 통하여 Hirehose로 부터 이벤트를 수신 합니다. 수신 된 데이터는 App Services Application의 Serverless 함수(Function)를 통해 가공된 후 MongoDB에 저장 됩니다.  
 저장된 데이터를 Chart를 이용하여 시각화하여 데이터를 확인 합니다.
 
 예상 시간 (40분)
 
-#### MongoDB Atlas Realm Application 생성
-Atlas의 Data Platform 서비스로 Serverless 형태의 서비스를 제공 합니다. IoT컬렉션에 데이터 생성을 위한 서비스를 제공 합니다. Atlas Console 에서 Realm 메뉴에서 Realm Application 을 추가 하여 줍니다.     
+#### MongoDB Atlas App Service 생성
+Atlas의 Data Platform 서비스로 Serverless 형태의 서비스를 제공 합니다. IoT컬렉션에 데이터 생성을 위한 서비스를 제공 합니다. Atlas Console 에서 App serivces 메뉴에서 Application 을 추가 하여 줍니다.     
 연결된 데이터 소스를 사용 하고 있는 데이터베이스 클러스터를 선택 하고 배포 모델을 Local 로 한 후 Singapore로 선택 하여 줍니다. (Realm Application은 선택한 MongoDB Cluster와 연결하여 Application 내의 서비스에서 직접 Query 수행이 가능합니다. 이전 Handson에서 진행한 API Gateway와 Lambda와 유사한 서비스로 MongoDB와 직접 연결이 되는 장점이 있습니다.)    
 
 
@@ -120,14 +120,14 @@ API Key 는 다음 값을 입력 하여 줍니다.
 Aol7jmcDjYxLoruWMZprJHQPxHdCx7kvxLn5yvtOR3gdErza0fevfZWwLJygpu3H
 `````
 
-MongoDB Realm webhook URL 은 Realm application 에서 Https Endpoints 에 생성한 서비스를 클릭 하여 Operation Type 에서 얻을 수 있습니다.    
+MongoDB App Services 접근 URL은 App Services application 에서 Https Endpoints에 생성한 서비스를 클릭 하여 Operation Type 에서 얻을 수 있습니다.    
 <img src="/2.IoT/images/images12.png" width="90%" height="90%">     
 
 백업 설정으로 실패한 데이터를 버킷으로 전송 하게 됩니다.    
 
 #### Firehose 수행
 Firehose 를 실행하여 데이터 생성을 확인 합니다.   
-Data 는 다음 Json 메시지를 Base64로 encoding 하여 줍니다.    
+Data는 다음 Json 메시지를 Base64로 encoding 하여 줍니다.    
 
 `````
 {"owner": "atlas-iot"}
@@ -135,6 +135,7 @@ Data 는 다음 Json 메시지를 Base64로 encoding 하여 줍니다.
 
 생성한 Firehose에 메시지를 생성 합니다. Base64로 encoding한 메시지를 Data에 추가 하여 실행 하여 줍니다.   
 해당 커맨드를 실행 하기 위해 aws cli 설치가 필요하며 실행을 위한 인증이 되어야 합니다.   
+delivery-stream-name은 생성한 firehose의 이름입력하고 data 부분에 base64 encoding 메시지를 입력 하여 줍니다.   
 
 `````
 techcamp % aws firehose put-record --delivery-stream-name PUT-MNG-*** --record '{ "Data":"<<Base64 Encoding Message>>"}'
